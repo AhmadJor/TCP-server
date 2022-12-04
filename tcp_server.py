@@ -29,7 +29,6 @@ def main():
             data = client_socket.recv(1024)
         except:
             client_socket.close()
-            server.settimeout(old_timeout)
             continue
 
         # extract name of file
