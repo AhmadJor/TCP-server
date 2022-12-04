@@ -1,14 +1,14 @@
 import socket, sys, os
 
 
-# checks if the port is in the legall intarval (from the lecture)
-def legall_port(port):
+# checks if the port is in the legal interval (from the lecture)
+def legal_port(port):
     return port > 0 and port <= 2 ** 16
 
 
 def main():
     port = int(sys.argv[1])
-    if not legall_port(port):
+    if not legal_port(port):
         print("illegal port")
         exit()
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
