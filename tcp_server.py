@@ -24,13 +24,19 @@ def main():
         client_socket, client_address = server.accept()
 
         # set a timeout for recv for 1 second - close client if time has expired
-        try:
-            server.settimeout(1)
-            data = client_socket.recv(1024)
-        except:
-            client_socket.close()
-            continue
-
+        # keep on receving emoty data until getting non-empty data 
+        while True:
+            try:
+                server.settimeout(1)
+                data = client_socket.recv(1024)
+            except:
+                client_socket.close()
+                continue   
+            if len(data.decode())==0:
+                client_socket.close()
+                continue
+            else:
+                break
         # extract name of file
         lines = data.decode().split('\r\n')
         file_name = "files" + lines[0].split(" ")[1]
