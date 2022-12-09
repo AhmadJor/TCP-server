@@ -17,18 +17,22 @@ def main():
 
     # save old timeout for future use
     old_timeout = server.gettimeout()
+    connection = 'close'
 
     while True:
-        # set timeout to old timeout for accept
-        server.settimeout(old_timeout)
-        client_socket, client_address = server.accept()
+        if connection == 'close':
+            # set timeout to old timeout for accept
+            print("waiting for new client")
+            server.settimeout(old_timeout)
+            client_socket, client_address = server.accept()
 
         # set a timeout for recv for 1 second - close client if time has expired
         try:
-            server.settimeout(1)
+            client_socket.settimeout(1)
             data = client_socket.recv(1024)
         except:
             client_socket.close()
+            connection = 'close'
             continue
 
         # extract name of file
@@ -44,7 +48,8 @@ def main():
             print(data.decode())
             connection = "close"
             client_socket.send(
-                ("HTTP/1.1 301 Moved Permanently\r\nConnection: " + connection + "\r\nLocation: /result.html" + "\r\n\r\n").encode())
+                (
+                            "HTTP/1.1 301 Moved Permanently\r\nConnection: " + connection + "\r\nLocation: /result.html" + "\r\n\r\n").encode())
             client_socket.close()
 
         # if file exists
@@ -68,7 +73,7 @@ def main():
             file.close()
 
             # close connection if needed
-            if connection == 'closed':
+            if connection == 'close':
                 client_socket.close()
 
         # if file does not exist
