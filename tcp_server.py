@@ -15,15 +15,11 @@ def main():
     server.bind(('', port))
     server.listen(5)
 
-    # save old timeout for future use
-    old_timeout = server.gettimeout()
     connection = 'close'
 
     while True:
         if connection == 'close':
             # set timeout to old timeout for accept
-            print("waiting for new client")
-            server.settimeout(old_timeout)
             client_socket, client_address = server.accept()
 
         # set a timeout for recv for 1 second - close client if time has expired
@@ -39,22 +35,28 @@ def main():
         lines = data.decode().split('\r\n')
         file_name = "files" + lines[0].split(" ")[1]
 
+        print(data.decode())
+
+        # if the msg is empty
+        if len(data.decode()) == 0:
+            client_socket.close()
+            connection = 'close'
+            continue
+
         # if request is /
-        if (file_name == "files/"):
+        if file_name == "files/":
             file_name = "files/index.html"
 
         # if request ifs /redirect
         if file_name == "files/redirect":
-            print(data.decode())
             connection = "close"
             client_socket.send(
-                (
-                            "HTTP/1.1 301 Moved Permanently\r\nConnection: " + connection + "\r\nLocation: /result.html" + "\r\n\r\n").encode())
+                ("HTTP/1.1 301 Moved Permanently\r\nConnection: " + connection + "\r\nLocation: /result.html"
+                 + "\r\n\r\n").encode())
             client_socket.close()
 
         # if file exists
         elif os.path.isfile(file_name):
-            print(data.decode())
 
             # get current connection request
             for line in lines:
@@ -78,7 +80,8 @@ def main():
 
         # if file does not exist
         else:
-            client_socket.send("HTTP/1.1 404 Not Found\r\nConnection: close\r\n\r\n".encode())
+            connection = 'close'
+            client_socket.send(("HTTP/1.1 404 Not Found\r\nConnection: " + connection + "\r\n\r\n").encode())
             client_socket.close()
 
 
